@@ -1,0 +1,207 @@
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="scotchTodo">
+<head>
+	<!-- META -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+	<title>Node/Angular Todo App</title>
+
+	<!-- SCROLLS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<style>
+		html 					{ overflow-y:scroll; }
+		body 					{ padding-top:50px; }
+		#todo-list 				{ margin-bottom:30px; }
+		#todo-form 	 			{ margin-bottom:50px; }
+
+		#myInput {
+		    background-image: url('/css/searchicon.png'); /* Add a search icon to input */
+		    background-position: 10px 12px; /* Position the search icon */
+		    background-repeat: no-repeat; /* Do not repeat the icon image */
+		    width: 100%; /* Full-width */
+		    font-size: 16px; /* Increase font-size */
+		    padding: 12px 20px 12px 40px; /* Add some padding */
+		    border: 1px solid #ddd; /* Add a grey border */
+		    margin-bottom: 12px; /* Add some space below the input */
+		}
+	</style>
+
+	<!-- SPELLS -->
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script><!-- load angular -->
+
+	<script src="js/controllers/main.js"></script> <!-- load up our controller -->
+	<script src="js/services/todos.js"></script> <!-- load our todo service -->
+	<script src="js/core.js"></script> <!-- load our main application -->
+
+	
+
+
+</head>
+<!-- SET THE CONTROLLER -->
+<body ng-controller="mainController">
+	<div class="container">
+
+		<!-- HEADER AND TODO COUNT -->
+		<div class="jumbotron text-center">
+			<h1>Tasks <span class="label label-info">{{ todos.length }}</span></h1>
+		</div>
+	
+
+		<div id="myModal" class="modal fade" role="dialog">
+		  <div class="modal-dialog">
+
+		    <!-- Modal content-->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal">&times;</button>
+		        <h4 class="modal-title">Edit Task</h4>
+		      </div>
+		      <div class="modal-body">
+		      		<div class="form-group">
+		        	<label>Description</label>
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" value="description" class="form-control" value="modalData.description" ng-model="modalData.description">
+					</div>
+                    <div class="form-group">
+                         <label>Notes</label>
+                         <textarea  class="form-control" rows="5" id="comment" ng-model="modalData.notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                         <label>Category</label>
+                         <input type="text" value="description" class="form-control" value="modalData.category" ng-model="modalData.category">
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="priorityModal" class="selectpicker">
+                          <option>Low</option>
+						  <option>High</option>
+						  <option>Medium</option>
+						  
+						</select>
+				    </div>
+                    <div class="form-group">
+                         <label> Due Date</label>
+                         <input type="date" class="form-control" ng-model="modalData.due_date">
+                    </div>
+		      </div>
+		      <div class="modal-footer">
+		      	<button type="button" class="btn btn-success" ng-click=editTask() data-dismiss="modal">Ok</button>
+		        <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+		      </div>
+		    </div>
+
+		  </div>
+		</div>
+		<label>Filter</label>
+		<br>
+		<label>Status <input ng-model="search.status"></label> <br>
+		<label>Priority <input ng-model="search.priority"></label><br>
+		<label>Category <input ng-model="search.category"></label><br>
+		<label>Due Date <input ng-model="search.due_date"></label><br>
+		<!-- TODO LIST -->
+		<div  class="row">
+			<div class="col-md-2"></div>
+  			<div class="col-md-8">
+
+  				<table class="table">
+			        <thead class="h">
+			          <tr class="h">
+			    
+			            <th class="h">Description</th>
+			            <th class="h">Notes</th>
+			            <th class="h">Category</th>
+			            <th class="h">Priority</th>
+			            <th class="h">Due Date</th>
+			            <th class="h">Status</th>
+			            <th class="h">Options</th>
+			          </tr>
+			        </thead>
+			    
+			 <tbody>
+
+				
+
+				<!-- LOOP OVER THE TODOS IN $scope.todos -->
+				<tr ng-repeat="todo in todos | filter:search:strict">
+
+	            
+		              <td>{{todo.description}}</td>
+		              <td>{{todo.notes}}</td>
+		              <td>{{todo.category}}</td>
+		              <td>{{todo.priority}}</td>
+		              <td>{{todo.due_date | date}}</td>
+		              <td>{{todo.status}}</td>
+	            
+		            <td>
+		              <button class="btn btn-success" ng-click="changeStatus(todo)" ng-show="todo.status != 'done'">
+		                <i  class="fa fa-check"></i>
+		              </button>
+		              <button class="btn btn-primary" data-toggle="modal" ng-click="fillForm(todo)" data-target="#myModal">
+		                  <i  class="fa fa-pencil"></i>
+		                </button>
+		              <button class="btn btn-danger" ng-click="deleteTodo(todo._id)">
+		                  <i  class="fa fa-trash-o"></i>
+		                </button>
+		            </td>
+
+	          	</tr>
+	        </tbody>
+        </table>
+				<p class="text-center" ng-show="loading">
+					<span class="fa fa-spinner fa-spin fa-3x"></span>
+				</p>
+
+			</div>
+		</div>
+
+		<!-- FORM TO CREATE TODOS -->
+		<div id="todo-form" class="row">
+			<div class="col-sm-5 col-sm-offset-2">
+				<form>
+					<div class="form-group">
+                                                <label>Description</label>
+						<!-- BIND THIS VALUE TO formData.text IN ANGULAR -->
+						<input type="text" value="description" class="form-control" ng-model="formData.description">
+					</div>
+                                        <div class="form-group">
+                                             <label>Notes</label>
+                                             <textarea  class="form-control" rows="5" id="comment" ng-model="formData.notes"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Category</label>
+	                                        <input type="text" value="description" class="form-control" ng-model="formData.category">
+										</div>
+										<div class="form-group">
+                                            <label>Priority</label>
+	                                        <select id="priority" class="selectpicker">
+	                                        <option>Low</option>
+	                                        <option>Medium</option>
+											<option>High</option>
+											  
+											  
+											</select>
+										</div>
+                                        <div class="form-group">
+                                             <label> Due Date</label>
+                                             <input type="date" class="form-control" ng-model="formData.due_date">
+                                        </div>
+
+					<!-- createToDo() WILL CREATE NEW TODOS -->
+					<button type="submit" class="btn btn-primary btn-lg" ng-click="createTodo()">Add</button>
+				</form>
+			</div>
+		</div>
+
+
+	</div>
+
+</body>
+
+
+</html>
